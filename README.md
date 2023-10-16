@@ -2,6 +2,8 @@
 
 ## Todo
 
-- customize file path and file name
-- integrate mdict-util
-- integrate Anki Connect
+- [x] customize file path and file name
+- [ ] mdd support
+- [ ] multi dictionary support
+- [ ] ~~integrate mdict-util~~
+- [ ] integrate Anki Connect
