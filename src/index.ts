@@ -2,8 +2,9 @@ import Router from "@koa/router";
 import Koa from "koa";
 import { readFile } from "node:fs/promises";
 import { dictConfig } from "../config";
-import { metaData, metaReadable, search } from "./service";
-const { cssPath, cssName } = dictConfig;
+import { metaData, metaReadable, searchMdd, searchMdx } from "./service";
+import { CustomError, CustomErrorType } from "./errors";
+const { cssPath, cssName, resultReplace } = dictConfig;
 const app = new Koa();
 const router = new Router();
 router.get("/", async (ctx) => {
@@ -35,11 +36,36 @@ if (cssPath && cssName) {
   });
 }
 // two different kind of search
-router.get(["/search/:key", "/search-r/:key"], async (ctx) => {
+router.get(["/search/(.*)", "/search-r/(.*)"], async (ctx) => {
   const recursive = ctx.path.startsWith("/search-r");
-  const key = ctx.params?.key;
-  const result = await search(key, recursive);
-  ctx.body = result.map((e) => e.paraphrase).join("");
+  const key = ctx.params[0];
+  const result = await searchMdx(key, recursive);
+  if (result.length === 0) {
+    try {
+      ctx.body = await searchMdd(key);
+    } catch (e: unknown) {
+      if (e instanceof CustomError) {
+        switch (e.type) {
+          case CustomErrorType.MddNotExist:
+            ctx.status = 404;
+            ctx.body = "mdd not exist";
+            break;
+          case CustomErrorType.MddEntryNotExist:
+            ctx.status = 404;
+            break;
+          default:
+            throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
+  } else {
+    ctx.type = "text/html";
+    const resultString = result.map((e) => e.paraphrase).join("");
+    ctx.body = resultReplace ? resultReplace(resultString) : resultString;
+  }
 });
+
 app.use(router.routes()).use(router.allowedMethods());
 app.listen(3000);
