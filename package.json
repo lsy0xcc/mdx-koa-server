@@ -11,6 +11,7 @@
   "dependencies": {
     "@koa/router": "^11.0.2",
     "koa": "^2.14.2",
+    "node-html-parser": "^6.1.10",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {

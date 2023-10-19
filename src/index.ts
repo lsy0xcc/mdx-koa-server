@@ -2,7 +2,13 @@ import Router from "@koa/router";
 import Koa from "koa";
 import { readFile } from "node:fs/promises";
 import { dictConfig } from "../config";
-import { metaData, metaReadable, searchMdd, searchMdx } from "./service";
+import {
+  metaData,
+  metaReadable,
+  searchMdd,
+  searchMdx,
+  searchMdxApi,
+} from "./service";
 import { CustomError, CustomErrorType } from "./errors";
 const { cssPath, cssName, resultReplace } = dictConfig;
 const app = new Koa();
@@ -47,9 +53,6 @@ router.get(["/search/(.*)", "/search-r/(.*)"], async (ctx) => {
       if (e instanceof CustomError) {
         switch (e.type) {
           case CustomErrorType.MddNotExist:
-            ctx.status = 404;
-            ctx.body = "mdd not exist";
-            break;
           case CustomErrorType.MddEntryNotExist:
             ctx.status = 404;
             break;
@@ -64,6 +67,15 @@ router.get(["/search/(.*)", "/search-r/(.*)"], async (ctx) => {
     ctx.type = "text/html";
     const resultString = result.map((e) => e.paraphrase).join("");
     ctx.body = resultReplace ? resultReplace(resultString) : resultString;
+  }
+});
+
+router.get("/search-api/:key", async (ctx) => {
+  const result = await searchMdxApi(ctx.params.key);
+  if (result.length === 0) {
+    ctx.state = 404;
+  } else {
+    ctx.body = result;
   }
 });
 

@@ -16,7 +16,8 @@ export interface MetaRecord {
 }
 
 const Sqlite = sqlite3.verbose();
-const { mdxPath, mddPath, mddReplace, name } = dictConfig;
+const { mdxPath, mddPath, mddReplace, name, redirectExtract, resultToApi } =
+  dictConfig;
 const mdxDb = new Sqlite.Database(mdxPath);
 const mddDb = mddPath ? new Sqlite.Database(mddPath) : null;
 
@@ -31,17 +32,17 @@ export const searchMdx = async (value: string, recursive?: boolean) => {
           reject(err.message);
         }
         const records = (rows as MdxRecord[]).map(async (row) => {
-          const matchResult = row.paraphrase.match(/^@@@LINK=(.*)/); // if the record is a link
-          if (matchResult) {
+          const redirectEntry = redirectExtract?.(row.paraphrase); // if the record is a link
+          if (redirectEntry) {
             if (recursive) {
               // search again
-              return searchMdx(matchResult[1], recursive);
+              return searchMdx(redirectEntry, recursive);
             } else {
               // return an element
               return [
                 {
                   entry: row.entry,
-                  paraphrase: `<a href="./${matchResult[1]}">${matchResult[1]}</a><br/>`,
+                  paraphrase: `<a href="./${redirectEntry}">${redirectEntry}</a><br/>`,
                 },
               ];
             }
@@ -57,11 +58,15 @@ export const searchMdx = async (value: string, recursive?: boolean) => {
   });
 };
 
+export const searchMdxApi = async (value: string) => {
+  const mdxData = await searchMdx(value, true);
+  return mdxData.map((e) => resultToApi?.(e.paraphrase));
+};
+
 export const searchMdd = async (value: string) => {
   return new Promise((resolve, reject) => {
     if (mddDb) {
       const queryKey = mddReplace ? mddReplace(value) : value;
-      console.log(value, queryKey);
       mddDb.get(
         "Select * From mdd Where entry = ? COLLATE NOCASE",
         queryKey,
