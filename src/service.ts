@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { dictConfig } from "../config";
+import { dictConfig } from "./config";
 import { CustomError, CustomErrorType } from "./errors";
 
 export interface MdxRecord {

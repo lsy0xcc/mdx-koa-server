@@ -47,8 +47,8 @@ export type Result = Partial<{
 
 export const dictConfig: DictionaryData<Result> = {
   name: "日汉双解词典",
-  mdxPath: path.resolve(__dirname, "data/rhsjcd.db"),
-  cssPath: path.resolve(__dirname, "data/rhsjcd.css"),
+  mdxPath: path.resolve(__dirname, "../data/rhsjcd.db"),
+  cssPath: path.resolve(__dirname, "../data/rhsjcd.css"),
   cssName: "rhsjcd.css",
   redirectExtract: (input) => {
     const matchResult = input.match(/^@@@LINK=(.*)/);

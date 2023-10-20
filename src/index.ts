@@ -1,7 +1,7 @@
 import Router from "@koa/router";
 import Koa from "koa";
 import { readFile } from "node:fs/promises";
-import { dictConfig } from "../config";
+import { dictConfig } from "./config";
 import {
   metaData,
   metaReadable,
