@@ -1,0 +1,28 @@
+<div>
+  <div class="type">{{type}}</div>
+  <div class="def">
+    {{#each def}}
+    <div class="def-index">
+      <span class="def-index">{{this.index}}</span>
+      <span class="def-jp">{{this.jp}}</span>
+      <span class="def-zh">{{this.zh}}</span>
+      <div class="exam">{{{this.exam}}}</div>
+      {{#if this.anti}}
+      <div class="anti">反：
+        {{#each this.anti}}
+        <span>{{this}}</span>
+        {{/each}}
+      </div>
+      {{/if}}
+      {{#if this.syns}}
+      <div class="syns">類：
+        {{#each this.syns}}
+        <span>{{this}}</span>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  <div class="note">{{note}}</div>
+</div>

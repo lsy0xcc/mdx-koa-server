@@ -1,15 +1,19 @@
 import Router from "@koa/router";
+import Handlebars from "handlebars";
 import Koa from "koa";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dictConfig } from "./config";
+import { AnkiResult, dictConfig } from "./config";
+import { CustomError, CustomErrorType } from "./errors";
 import {
   metaData,
   metaReadable,
   searchMdd,
   searchMdx,
   searchMdxApi,
+  searchToAnki,
+  searchToAnkiTable,
 } from "./service";
-import { CustomError, CustomErrorType } from "./errors";
 const { cssPath, cssName, resultReplace } = dictConfig;
 const app = new Koa();
 const router = new Router();
@@ -76,6 +80,27 @@ router.get("/search-api/:key", async (ctx) => {
     ctx.state = 404;
   } else {
     ctx.body = result;
+  }
+});
+
+const tableTemplate = Handlebars.compile(
+  readFileSync("./template/table.hbs").toString()
+);
+
+router.get("/search-anki/:key", async (ctx) => {
+  const result: AnkiResult[] = await searchToAnki(ctx.params.key);
+  if (result.length === 0) {
+    ctx.state = 404;
+  } else {
+    ctx.body = result;
+  }
+});
+router.get("/search-anki-table/:key", async (ctx) => {
+  const result = await searchToAnkiTable(ctx.params.key);
+  if (result.length === 0) {
+    ctx.state = 404;
+  } else {
+    ctx.body = result.join("\n");
   }
 });
 

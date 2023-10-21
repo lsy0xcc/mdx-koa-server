@@ -1,5 +1,7 @@
+import Handlebars from "handlebars";
+import { readFileSync } from "node:fs";
 import sqlite3 from "sqlite3";
-import { dictConfig } from "./config";
+import { AnkiResult, ApiResult, dictConfig } from "./config";
 import { CustomError, CustomErrorType } from "./errors";
 
 export interface MdxRecord {
@@ -16,10 +18,21 @@ export interface MetaRecord {
 }
 
 const Sqlite = sqlite3.verbose();
-const { mdxPath, mddPath, mddReplace, name, redirectExtract, resultToApi } =
-  dictConfig;
+const {
+  mdxPath,
+  mddPath,
+  mddReplace,
+  name,
+  redirectExtract,
+  resultToApi,
+  apiToAnki,
+} = dictConfig;
 const mdxDb = new Sqlite.Database(mdxPath);
 const mddDb = mddPath ? new Sqlite.Database(mddPath) : null;
+
+const tableTemplate = Handlebars.compile(
+  readFileSync("./template/table.hbs").toString()
+);
 
 export const searchMdx = async (value: string, recursive?: boolean) => {
   return new Promise<MdxRecord[]>((resolve, reject) => {
@@ -59,8 +72,25 @@ export const searchMdx = async (value: string, recursive?: boolean) => {
 };
 
 export const searchMdxApi = async (value: string) => {
-  const mdxData = await searchMdx(value, true);
-  return mdxData.map((e) => resultToApi?.(e.paraphrase));
+  const mdxData: MdxRecord[] = await searchMdx(value, true);
+  return mdxData.map((e) => resultToApi?.(e.paraphrase) ?? {});
+};
+
+export const searchToAnki = async (value: string) => {
+  const mdxList: ApiResult[] = await searchMdxApi(value);
+  return mdxList.map((e) => apiToAnki?.(e) ?? {});
+};
+
+export const searchToAnkiTable = async (value: string) => {
+  const ankiDataList: AnkiResult[] = await searchToAnki(value);
+  return ankiDataList
+    .map((e) => ({
+      data: Object.entries(e ?? {}).map((e) => ({
+        key: e[0],
+        value: e[1],
+      })),
+    }))
+    .map((e) => tableTemplate(e));
 };
 
 export const searchMdd = async (value: string) => {
@@ -109,24 +139,7 @@ export const metaReadable = async () => {
         console.error(err);
         reject(err.message);
       }
-      resolve(
-        `<div>
-          <style>
-          table, td { border: 1px solid #333; }
-          thead, tfoot { background-color: #333; color: #fff; }
-          </style>
-          <h1>${name}</h1>
-          <table>
-            <thead>
-              <tr><th>key</th><th>value</th></tr>
-            </thead>
-            <tbody> ${(rows as MetaRecord[])
-              .map((e) => `<tr><td>${e.key}</td><td>${e.value}</td></tr>`)
-              .join("\n")}
-            </tbody>
-          </table>
-        </div> `
-      );
+      resolve(tableTemplate({ name, data: rows }));
     });
   });
 };

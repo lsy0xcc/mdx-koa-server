@@ -1,6 +1,10 @@
+import Handlebars from "handlebars";
 import parse from "node-html-parser";
+import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import path from "node:path";
-interface DictionaryData<T> {
+
+export interface DictionaryData<Api = string, Anki = string> {
   name: string;
   mdxPath: string;
   mddPath?: string;
@@ -9,10 +13,11 @@ interface DictionaryData<T> {
   cssName?: string;
   redirectExtract?: (input: string) => string;
   resultReplace?: (input: string) => string; // replace the link in mdx. e.g. sound:// or entry://
-  resultToApi?: (input: string) => T; // convert mdx result to api format
+  resultToApi?: (input: string) => Api; // convert mdx result to api format
+  apiToAnki?: (input: Api) => Anki; // convert api result to Anki type
 }
 
-export type Example = Partial<{
+export type Exam = Partial<{
   jp: string;
   zh: string;
 }>;
@@ -21,7 +26,7 @@ export type DefItem = Partial<{
   index: string;
   jp: string;
   zh: string;
-  example: Example[];
+  exam: Exam[];
   anti: string[];
   syns: string[];
 }>;
@@ -33,7 +38,7 @@ export type Def = Partial<{
   note: string;
 }>;
 
-export type Result = Partial<{
+export type ApiResult = Partial<{
   priority: number;
   spell: string;
   kana: string;
@@ -42,10 +47,37 @@ export type Result = Partial<{
   words: string[];
   wordWithSymbol: string;
   wordsWithSymbol: string[];
+  origin: string;
   defs: Def[];
 }>;
 
-export const dictConfig: DictionaryData<Result> = {
+export type AnkiResult = Partial<{
+  uuid: string;
+  date: string;
+  priority: string;
+  word: string;
+  wordWithSymbol: string;
+  kana: string;
+  spell: string;
+  tune: string;
+  origin: string;
+  type: string;
+  description: string;
+  descriptionZh: string;
+  descriptionJp: string;
+  examJp: string;
+  examZh: string;
+  examFull: string;
+}>;
+
+const examDefTemplate = Handlebars.compile(
+  readFileSync("./template/exam-def.hbs").toString()
+);
+const descriptionTemplate = Handlebars.compile(
+  readFileSync("./template/description.hbs").toString()
+);
+
+export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
   name: "日汉双解词典",
   mdxPath: path.resolve(__dirname, "../data/rhsjcd.db"),
   cssPath: path.resolve(__dirname, "../data/rhsjcd.css"),
@@ -161,13 +193,13 @@ export const dictConfig: DictionaryData<Result> = {
           }
           switch (e.classNames) {
             case "exam":
-              if (!currentDefItem.example) {
-                currentDefItem.example = [];
+              if (!currentDefItem.exam) {
+                currentDefItem.exam = [];
               }
               const currentExample: any = {};
               currentExample.jp = e.querySelector("exjp")?.innerText + "。";
               currentExample.zh = e.querySelector("exzh")?.innerText;
-              currentDefItem.example.push(currentExample);
+              currentDefItem.exam.push(currentExample);
               break;
             case "anti":
             case "syns":
@@ -197,5 +229,67 @@ export const dictConfig: DictionaryData<Result> = {
       origin,
       defs: defList,
     };
+  },
+  apiToAnki: (input: ApiResult) => {
+    const { priority, spell, kana, tune, word, wordWithSymbol, origin, defs } =
+      input;
+    const typeList = defs?.map((e) => e.type);
+    const fullDescriptionList = defs?.map((e) => ({
+      ...e,
+      def: e?.def?.map((e) => ({
+        ...e,
+        exam: examDefTemplate({
+          data: e.exam,
+          showZh: true,
+          showJp: true,
+          type: "exam",
+        }),
+      })),
+    }));
+    const descriptionList = defs?.map((e) =>
+      e.def?.map((e) => ({ zh: e.zh, jp: e.jp }))
+    );
+    const examList = defs
+      ?.map((e) => e.def?.map((e) => e.exam))
+      .flat()
+      .flat();
+    const result: AnkiResult = {
+      uuid: randomUUID(),
+      date: new Date().toISOString(),
+      priority: priority?.toString(),
+      word,
+      wordWithSymbol,
+      kana,
+      spell,
+      tune,
+      origin,
+      type: typeList?.join("・"),
+      description: fullDescriptionList
+        ?.map((e) => descriptionTemplate(e))
+        .join("\n"),
+      descriptionJp: descriptionList
+        ?.map((e) => examDefTemplate({ data: e, type: "desc", showJp: true }))
+        .join("\n"),
+      descriptionZh: descriptionList
+        ?.map((e) => examDefTemplate({ data: e, type: "desc", showZh: true }))
+        .join("\n"),
+      examJp: examDefTemplate({
+        data: examList,
+        showJp: true,
+        type: "exam",
+      }),
+      examZh: examDefTemplate({
+        data: examList,
+        showZh: true,
+        type: "exam",
+      }),
+      examFull: examDefTemplate({
+        data: examList,
+        showZh: true,
+        showJp: true,
+        type: "exam",
+      }),
+    };
+    return result;
   },
 };
