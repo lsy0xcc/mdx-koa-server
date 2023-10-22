@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 export interface DictionaryData<Api = string, Anki = string> {
+  port: number;
   name: string;
   mdxPath: string;
   mddPath?: string;
@@ -78,6 +79,7 @@ const descriptionTemplate = Handlebars.compile(
 );
 
 export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
+  port: 3001,
   name: "日汉双解词典",
   mdxPath: path.resolve(__dirname, "../data/rhsjcd.db"),
   cssPath: path.resolve(__dirname, "../data/rhsjcd.css"),

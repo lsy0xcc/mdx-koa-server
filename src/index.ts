@@ -14,7 +14,7 @@ import {
   searchToAnki,
   searchToAnkiTable,
 } from "./service";
-const { cssPath, cssName, resultReplace } = dictConfig;
+const { cssPath, cssName, resultReplace, port } = dictConfig;
 const app = new Koa();
 const router = new Router();
 router.get("/", async (ctx) => {
@@ -83,10 +83,6 @@ router.get("/search-api/:key", async (ctx) => {
   }
 });
 
-const tableTemplate = Handlebars.compile(
-  readFileSync("./template/table.hbs").toString()
-);
-
 router.get("/search-anki/:key", async (ctx) => {
   const result: AnkiResult[] = await searchToAnki(ctx.params.key);
   if (result.length === 0) {
@@ -105,4 +101,4 @@ router.get("/search-anki-table/:key", async (ctx) => {
 });
 
 app.use(router.routes()).use(router.allowedMethods());
-app.listen(3000);
+app.listen(port);
