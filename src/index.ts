@@ -69,8 +69,9 @@ router.get(["/search/(.*)", "/search-r/(.*)"], async (ctx) => {
     }
   } else {
     ctx.type = "text/html";
-    const resultString = result.map((e) => e.paraphrase).join("");
-    ctx.body = resultReplace ? resultReplace(resultString) : resultString;
+    ctx.body = result
+      .map((e) => (e.paraphrase ? resultReplace?.(e.paraphrase) : e.paraphrase))
+      .join("");
   }
 });
 

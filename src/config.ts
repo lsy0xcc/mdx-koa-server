@@ -20,18 +20,23 @@ export type AnkiResult = {};
 export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
   port: 3002,
   name: "NHK发音词典",
-  mdxPath: path.resolve(__dirname, "../data/nhk.db"),
-  mddPath: path.resolve(__dirname, "../data/nhk-mdd.db"),
-  mddReplace: (input) => {
-    return "\\" + input.replaceAll("/", "\\");
+  mdxPath: path.resolve(__dirname, "../data/nhk-new.db"),
+  // mddPath: path.resolve(__dirname, "../data/xxgzr-mdd.db"),
+  // mddReplace: (input) => {
+  //   return "\\" + input.replaceAll("/", "\\");
+  // },
+  redirectExtract: (input) => {
+    return (
+      input.match(/<a href="entry:\/\/(.*)" class="word-link">.*<\/a>/)?.[1] ??
+      ""
+    );
   },
   resultReplace: (input) => {
-    return input.replaceAll(/(sound:\/\/\.\/)|(entry:\/\/)/g, "./");
-  },
-  redirectExtract: (input) => {
-    console.log(input);
-    return "";
+    return `<div class="tune-res">${input.replaceAll(
+      `<link type="text/css" href="./NHK日本語発音アクセント辞書.css" rel="stylesheet" />`,
+      `<link type="text/css" href="./nhk-accent.css" rel="stylesheet"/>`
+    )}</div>`;
   },
   cssPath: path.resolve(__dirname, "../data/NHK日本語発音アクセント辞書.css"),
-  cssName: "NHK日本語発音アクセント辞書.css",
+  cssName: "nhk-accent.css",
 };
