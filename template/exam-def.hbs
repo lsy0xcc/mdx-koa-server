@@ -1,12 +1,12 @@
-<div class="{{type}}-list">
+<ul class="{{type}}-list">
   {{#each data}}
-  <div class="{{type}}-item">
+  <li class="{{type}}-item">
     {{#if ../showJp}}
     <span class="{{type}}-jp">{{this.jp}}</span>
     {{/if}}
     {{#if ../showZh}}
     <span class="{{type}}-zh">{{this.zh}}</span>
     {{/if}}
-  </div>
+  </li>
   {{/each}}
-</div>
+</ul>

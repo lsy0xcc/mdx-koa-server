@@ -70,7 +70,11 @@ router.get(["/search/(.*)", "/search-r/(.*)"], async (ctx) => {
   } else {
     ctx.type = "text/html";
     ctx.body = result
-      .map((e) => (e.paraphrase ? resultReplace?.(e.paraphrase) : e.paraphrase))
+      .map((e) =>
+        e.paraphrase && resultReplace
+          ? resultReplace?.(e.paraphrase)
+          : e.paraphrase
+      )
       .join("");
   }
 });
