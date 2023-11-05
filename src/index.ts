@@ -1,7 +1,5 @@
 import Router from "@koa/router";
-import Handlebars from "handlebars";
 import Koa from "koa";
-import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { AnkiResult, dictConfig } from "./config";
 import { CustomError, CustomErrorType } from "./errors";

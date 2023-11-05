@@ -78,7 +78,7 @@ export const searchMdxApi = async (value: string) => {
 
 export const searchToAnki = async (value: string) => {
   const mdxList: ApiResult[] = await searchMdxApi(value);
-  return mdxList.map((e) => apiToAnki?.(e) ?? {});
+  return mdxList.map((e) => apiToAnki?.(e) ?? {}).flat();
 };
 
 export const searchToAnkiTable = async (value: string) => {
