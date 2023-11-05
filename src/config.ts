@@ -34,6 +34,8 @@ type AudioItem = {
 };
 
 const AUD_BUTTON_REG =
+  /<a href="sound:\/\/(.*)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/g;
+const RESULT_AUD_BUTTON_REG =
   /<a href="sound:\/\/(.*)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/;
 const KANA_REG = /(<span class="tune-([012]) tune-([nqb])">(.)<\/span>)|(.)/g;
 const BUTTON_MAP = {
@@ -46,18 +48,23 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
   port: 3002,
   name: "NHK发音词典",
   mdxPath: path.resolve(__dirname, "../data/nhk.db"),
-  // mddPath: path.resolve(__dirname, "../data/xxgzr-mdd.db"),
-  // mddReplace: (input) => {
-  //   return "\\" + input.replaceAll("/", "\\");
-  // },
+  mddPath: path.resolve(__dirname, "../data/nhk-mdd.db"),
+  mddReplace: (input) => {
+    return "\\" + input.replaceAll("/", "\\");
+  },
   redirectExtract: (input) => {
     return input.match(/^@@@LINK=(.*)/)?.[1] ?? "";
   },
   resultReplace: (input) => {
-    return `<div class="tune-res">${input.replaceAll(
-      `<link type="text/css" href="NHK日本語発音アクセント辞書.css" rel="stylesheet" />`,
-      `<link type="text/css" href="nhk-accent.css" rel="stylesheet"/>`
-    )}</div>`;
+    return `<div class="tune-res">${input
+      .replaceAll(
+        `<link type="text/css" href="NHK日本語発音アクセント辞書.css" rel="stylesheet" />`,
+        `<link type="text/css" href="nhk-accent.css" rel="stylesheet"/>`
+      )
+      .replaceAll(
+        AUD_BUTTON_REG,
+        `<a href=$1 class="aud-btn"><span class="aud-btn-cont">$2<\/span><\/a>`
+      )}</div>`;
   },
   resultToApi: (input) => {
     const temp = input.replaceAll(
@@ -73,9 +80,9 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
       const items = p.innerHTML.split(`<br>`);
       let pronWithEg: AudioItem[] = [];
       items.forEach((item) => {
-        const linkResult = item.match(AUD_BUTTON_REG);
+        const linkResult = item.match(RESULT_AUD_BUTTON_REG);
         if (linkResult) {
-          const kanaString = item.replace(AUD_BUTTON_REG, "").trim();
+          const kanaString = item.replace(RESULT_AUD_BUTTON_REG, "").trim();
           const kanaList: KanaTune[] = [];
           for (let kanaMatch of kanaString.matchAll(KANA_REG)) {
             kanaList.push({
