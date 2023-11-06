@@ -34,9 +34,9 @@ type AudioItem = {
 };
 
 const AUD_BUTTON_REG =
-  /<a href="sound:\/\/(.*)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/g;
+  /<a href="sound:\/\/(.*?)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/g;
 const RESULT_AUD_BUTTON_REG =
-  /<a href="sound:\/\/(.*)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/;
+  /<a href="sound:\/\/(.*?)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/;
 const KANA_REG = /(<span class="tune-([012]) tune-([nqb])">(.)<\/span>)|(.)/g;
 const BUTTON_MAP = {
   発音図: "pron",
