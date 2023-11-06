@@ -33,8 +33,7 @@ type AudioItem = {
   kanaList?: KanaTune[];
 };
 
-const AUD_BUTTON_REG =
-  /<a href="sound:\/\/(.*?)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/g;
+const AUD_BUTTON_REG = /<a href="sound:\/\/(.*?)" class="aud-btn">(.*?)<\/a>/g;
 const RESULT_AUD_BUTTON_REG =
   /<a href="sound:\/\/(.*?)" class="aud-btn"><span class="aud-btn-cont">((発音図)|(助詞付)|(例　文))<\/span><\/a>/;
 const KANA_REG = /(<span class="tune-([012]) tune-([nqb])">(.)<\/span>)|(.)/g;
@@ -43,6 +42,15 @@ const BUTTON_MAP = {
   助詞付: "ptcl",
   "例　文": "eg",
 };
+
+function updateAudioItem(objList: AudioItem[], prefix: string) {
+  const obj = objList.find((e) => e.type === prefix);
+  return {
+    [prefix + "Link"]: obj?.link,
+    [prefix + "Word"]: obj?.word,
+    [prefix + "Html"]: obj?.html,
+  };
+}
 
 export const dictConfig: DictionaryData<ApiResult, any> = {
   port: 3002,
@@ -63,7 +71,7 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
       )
       .replaceAll(
         AUD_BUTTON_REG,
-        `<a href=$1 class="aud-btn"><span class="aud-btn-cont">$2<\/span><\/a>`
+        `<a href=$1 class="aud-btn">$2<\/a>`
       )}</div>`;
   },
   resultToApi: (input) => {
@@ -124,16 +132,15 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
     };
   },
   apiToAnki: (input) => {
-    const result = input?.resultList
-      ?.map((audioItemList) =>
-        audioItemList.map((audioItem) => ({
-          ...audioItem,
-          title: input.title,
-          dataList: input.dataList?.join(""),
-        }))
-      )
-      .flat();
-    return result;
+    return input?.resultList?.map((e) => {
+      return {
+        title: input.title,
+        dataList: input.dataList?.join("・"),
+        ...updateAudioItem(e, "pron"),
+        ...updateAudioItem(e, "ptcl"),
+        ...updateAudioItem(e, "eg"),
+      };
+    });
   },
   cssPath: path.resolve(__dirname, "../data/nhk.css"),
   cssName: "nhk-accent.css",
