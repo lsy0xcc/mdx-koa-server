@@ -1,6 +1,6 @@
 import Handlebars from "handlebars";
 import parse from "node-html-parser";
-import { randomUUID } from "node:crypto";
+// import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -53,8 +53,8 @@ export type ApiResult = Partial<{
 }>;
 
 export type AnkiResult = Partial<{
-  uuid: string;
-  date: string;
+  // uuid: string;
+  // date: string;
   priority: string;
   word: string;
   wordWithSymbol: string;
@@ -257,8 +257,8 @@ export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
       .flat()
       .filter((e) => e);
     const result: AnkiResult = {
-      uuid: randomUUID(),
-      date: new Date().toISOString(),
+      // uuid: randomUUID(),
+      // date: new Date().toISOString(),
       priority: priority?.toString(),
       word,
       wordWithSymbol,
