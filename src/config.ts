@@ -101,7 +101,7 @@ export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
     const kana = spell?.replaceAll("・", "");
 
     const wordOriginList = root
-      .querySelectorAll("kan")
+      .querySelectorAll(".tags>kan")
       .map((e) => e.innerHTML)
       .join("")
       ?.match(/(〔.*〕)*/)?.[0]

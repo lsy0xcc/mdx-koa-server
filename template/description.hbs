@@ -1,28 +1,40 @@
-<div>
+<div class="description">
   <div class="type">{{type}}</div>
   <ol class="def">
     {{#each def}}
+<<<<<<< Updated upstream
     <li class="def-index">
+=======
+    <li class="def-item">
+>>>>>>> Stashed changes
       {{!-- <span class="def-index">{{this.index}}</span> --}}
       <span class="def-jp">{{this.jp}}</span>
       <span class="def-zh">{{this.zh}}</span>
       <div class="exam">{{{this.exam}}}</div>
       {{#if this.anti}}
-      <div class="anti">反：
+      <div class="anti">
+        <span class="anti-symbol">反</span>
         {{#each this.anti}}
-        <span>{{this}}</span>
+        <span class="anti-item">{{this}}</span>
         {{/each}}
       </div>
       {{/if}}
       {{#if this.syns}}
-      <div class="syns">類：
+      <div class="syns">
+        <span class="syns-symbol">類</span>
         {{#each this.syns}}
-        <span>{{this}}</span>
+        <span class="syns-item">{{this}}</span>
         {{/each}}
       </div>
       {{/if}}
     </li>
     {{/each}}
   </ol>
+<<<<<<< Updated upstream
   <div class="note">{{note}}</div>
+=======
+  {{#if note}}
+  <div class="note"><span class="note-symbol">参</span>{{note}}</div>
+  {{/if}}
+>>>>>>> Stashed changes
 </div>
