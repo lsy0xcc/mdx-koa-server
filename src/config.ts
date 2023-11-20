@@ -72,7 +72,7 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
       .replaceAll(
         AUD_BUTTON_REG,
         `<a href=$1 class="aud-btn">$2<\/a>`
-      )}</div>`;
+      )}</div>`.replaceAll(/\.spx/g, ".mp3");
   },
   resultToApi: (input) => {
     const temp = input.replaceAll(
