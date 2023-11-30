@@ -75,10 +75,12 @@ export const dictConfig: DictionaryData<ApiResult, any> = {
       )}</div>`.replaceAll(/\.spx/g, ".mp3");
   },
   resultToApi: (input) => {
-    const temp = input.replaceAll(
-      /(<a href=".+?" class="aud-btn"><span class="aud-btn-cont">.+?)<span>(<\/a>)/gm,
-      "$1</span>$2"
-    );
+    const temp = input
+      .replaceAll(
+        /(<a href=".+?" class="aud-btn"><span class="aud-btn-cont">.+?)<span>(<\/a>)/gm,
+        "$1</span>$2"
+      )
+      .replaceAll(/\.spx/g, ".mp3");
 
     const root = parse(temp);
     const title = root.getElementsByTagName("LEMMA")[0].innerText;
