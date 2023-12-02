@@ -276,22 +276,31 @@ export const dictConfig: DictionaryData<ApiResult, AnkiResult> = {
       descriptionZh: descriptionList
         ?.map((e) => examDefTemplate({ data: e, type: "desc", showZh: true }))
         .join("\n"),
-      examJp: examDefTemplate({
-        data: examList,
-        showJp: true,
-        type: "exam",
-      }),
-      examZh: examDefTemplate({
-        data: examList,
-        showZh: true,
-        type: "exam",
-      }),
-      examFull: examDefTemplate({
-        data: examList,
-        showZh: true,
-        showJp: true,
-        type: "exam",
-      }),
+      examJp:
+        (examList?.length ?? 0) <= 0
+          ? undefined
+          : examDefTemplate({
+              data: examList,
+              showJp: true,
+              type: "exam",
+            }),
+      examZh:
+        (examList?.length ?? 0) <= 0
+          ? undefined
+          : examDefTemplate({
+              data: examList,
+              showZh: true,
+              type: "exam",
+            }),
+      examFull:
+        (examList?.length ?? 0) <= 0
+          ? undefined
+          : examDefTemplate({
+              data: examList,
+              showZh: true,
+              showJp: true,
+              type: "exam",
+            }),
     };
     return result;
   },

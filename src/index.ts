@@ -1,8 +1,9 @@
 import Router from "@koa/router";
 import Koa from "koa";
 import { readFile } from "node:fs/promises";
-import { AnkiResult, dictConfig } from "./config";
+import { AnkiResult, ApiResult, dictConfig } from "./config";
 import { CustomError, CustomErrorType } from "./errors";
+import bodyParser from "koa-bodyparser";
 import {
   metaData,
   metaReadable,
@@ -12,8 +13,9 @@ import {
   searchToAnki,
   searchToAnkiTable,
 } from "./service";
-const { cssPath, cssName, resultReplace, port } = dictConfig;
+const { cssPath, cssName, resultReplace, port, apiToAnki } = dictConfig;
 const app = new Koa();
+app.use(bodyParser());
 const router = new Router();
 router.get("/", async (ctx) => {
   ctx.body = "server is running";
@@ -100,6 +102,41 @@ router.get("/search-anki-table/:key", async (ctx) => {
     ctx.state = 404;
   } else {
     ctx.body = result.join("\n");
+  }
+});
+
+router.post("/convert-data", async (ctx) => {
+  try {
+    if (ctx.request.body && apiToAnki) {
+      const apiResult = ctx.request.body as ApiResult;
+      const { wordsWithSymbol, defs } = apiResult;
+      const words = wordsWithSymbol?.map((e) =>
+        e.replaceAll("△", "").replaceAll("×", "")
+      );
+      const wordWithSymbol = wordsWithSymbol?.join("・");
+      const word = words?.join("・");
+      const extendedApiResult = {
+        ...apiResult,
+        words,
+        word,
+        wordWithSymbol,
+        defs: defs?.map((def) => ({
+          ...def,
+          def: def?.def?.map((defItem, index) => ({
+            ...defItem,
+            index: (index + 1).toString(),
+          })),
+          typeList: def?.type?.split("・"),
+        })),
+      };
+      const result = apiToAnki(extendedApiResult);
+      ctx.body = result;
+    } else {
+      ctx.state = 500;
+    }
+  } catch (e) {
+    console.error(e);
+    ctx.state = 500;
   }
 });
 
